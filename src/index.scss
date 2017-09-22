@@ -1,4 +1,18 @@
-.canvas {
+$clr_water: #ddd;
+$clr_land: #666;
+
+.svg {
   border: 1px solid orange;
   box-sizing: border-box;
+}
+
+.globe {
+}
+
+.water {
+  fill: $clr_water;
+}
+
+.land {
+  fill: $clr_land;
 }

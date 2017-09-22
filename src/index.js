@@ -1,5 +1,10 @@
 /* eslint no-unused-vars: off */
-import { canvas as canvasClass } from './index.scss';
+import {
+  svg as svgClass,
+  water,
+  globe as globeClass,
+  land as landClass
+} from './index.scss';
 
 const d3 = require('d3');
 const topojson = require('topojson');
@@ -14,12 +19,16 @@ const rotationModifier = 0.15;
 
 
 const app = document.getElementById('app');
-const canvas = d3.select('#app').append('canvas')
+const svg = d3.select(
+  document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+);
+
+svg
   .attr('width', width)
   .attr('height', height)
-  .classed(canvasClass, true);
+  .classed(svgClass, true);
 
-const context = canvas.node().getContext('2d');
+app.appendChild(svg.node());
 
 const projection = d3.geoOrthographic()
   .translate([width / 2, height / 2])
@@ -27,8 +36,7 @@ const projection = d3.geoOrthographic()
   .clipAngle(90);
 
 const path = d3.geoPath()
-  .projection(projection)
-  .context(context);
+  .projection(projection);
 
 
 
@@ -36,21 +44,21 @@ import('./world-110m').then(world => {
   const land = topojson.feature(world, world.objects.land);
 
   const drawWorld = () => {
-    context.beginPath();
-    path(land);
-    context.fill();
+    const globe = svg.append('g').classed(globeClass, true);
+
+    globe.append('circle')
+      .classed(water, true)
+      .attr('cx', width / 2)
+      .attr('cy', height / 2)
+      .attr('r', radius);
+
+    globe.datum(land)
+      .append('path')
+      .attr('d', path)
+      .classed(landClass, true);
   };
 
-  const drawBorder = () => {
-    context.beginPath();
-    context.arc(width / 2, height / 2, radius, 0, 2 * Math.PI, true);
-    context.lineWidth = 2.5;
-    context.stroke();
-  };
-
-  context.clearRect(0, 0, width, height);
   drawWorld();
-  drawBorder();
 
   const rotate = (() => {
     let accumulatedRotation = { x: 0, y: 0 };
@@ -59,15 +67,13 @@ import('./world-110m').then(world => {
       accumulatedRotation.x += x * rotationModifier;
       accumulatedRotation.y -= y * rotationModifier;
 
-      context.clearRect(0, 0, width, height);
+      svg.select(`.${globeClass}`).remove();
       projection.rotate([accumulatedRotation.x, accumulatedRotation.y]);
-
       drawWorld();
-      drawBorder();
     };
   })();
 
-  canvas.call(
+  svg.call(
     d3.drag()
       .on('start', () => console.log('drag start'))
       .on('drag', () => rotate(d3.event.dx, d3.event.dy))
