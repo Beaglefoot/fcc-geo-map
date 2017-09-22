@@ -1,4 +1,6 @@
 /* eslint no-unused-vars: off */
+import { canvas as canvasClass } from './index.scss';
+
 const d3 = require('d3');
 const topojson = require('topojson');
 
@@ -14,7 +16,8 @@ const rotationModifier = 0.15;
 const app = document.getElementById('app');
 const canvas = d3.select('#app').append('canvas')
   .attr('width', width)
-  .attr('height', height);
+  .attr('height', height)
+  .classed(canvasClass, true);
 
 const context = canvas.node().getContext('2d');
 
@@ -50,13 +53,14 @@ import('./world-110m').then(world => {
   drawBorder();
 
   const rotate = (() => {
-    let accumulatedRotation = 0;
+    let accumulatedRotation = { x: 0, y: 0 };
 
-    return x => {
-      accumulatedRotation += x * rotationModifier;
+    return (x, y) => {
+      accumulatedRotation.x += x * rotationModifier;
+      accumulatedRotation.y -= y * rotationModifier;
 
       context.clearRect(0, 0, width, height);
-      projection.rotate([accumulatedRotation, 0]);
+      projection.rotate([accumulatedRotation.x, accumulatedRotation.y]);
 
       drawWorld();
       drawBorder();
@@ -66,7 +70,7 @@ import('./world-110m').then(world => {
   canvas.call(
     d3.drag()
       .on('start', () => console.log('drag start'))
-      .on('drag', () => rotate(d3.event.dx))
+      .on('drag', () => rotate(d3.event.dx, d3.event.dy))
       .on('end', () => console.log('drag end'))
   );
 });
