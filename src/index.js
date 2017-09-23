@@ -20,6 +20,20 @@ const scale = radius;
 const rotationModifier = 0.15;
 const graticuleStep = 30;
 
+const ctrlKey = (() => {
+  let isHoldingCtrlKey = false;
+
+  return {
+    isHeld: () => isHoldingCtrlKey,
+    setState: isHeld => isHoldingCtrlKey = isHeld
+  };
+})();
+
+const handleCtrlKey = event => ctrlKey.setState(event.ctrlKey);
+
+addEventListener('keydown', handleCtrlKey);
+addEventListener('keyup', handleCtrlKey);
+
 
 
 const app = document.getElementById('app');
@@ -64,11 +78,12 @@ fetch(url)
 
     const drawWorld = () => {
       const globe = svg.append('g').classed(globeClass, true);
+      const translation = projection.translate();
 
       globe.append('circle')
         .classed(water, true)
-        .attr('cx', width / 2)
-        .attr('cy', height / 2)
+        .attr('cx', translation[0])
+        .attr('cy', translation[1])
         .attr('r', radius);
 
       globe.datum(land)
@@ -90,36 +105,46 @@ fetch(url)
         .enter().append('path')
         .attr('d', path)
         .classed(graticuleClass, true);
+
+      return globe;
     };
 
-    drawWorld();
+    let globe = drawWorld();
 
-    const rotate = (() => {
-      let accumulatedRotation = { x: 0, y: 0 };
-      let accumulatedZoom = '';
+    const rotate = (x, y) => {
+      const accumulatedRotation = projection.rotate();
+      accumulatedRotation[0] += x * rotationModifier;
+      accumulatedRotation[1] -= y * rotationModifier;
 
-      return (x, y) => {
-        accumulatedRotation.x += x * rotationModifier;
-        accumulatedRotation.y -= y * rotationModifier;
+      const accumulatedZoom = globe.select(`.${landClass}`).attr('transform');
+      globe.remove();
+      projection.rotate(accumulatedRotation);
+      globe = drawWorld();
 
-        const globe = svg.select(`.${globeClass}`);
-        accumulatedZoom = globe.select(`.${landClass}`).attr('transform');
-        globe.remove();
-        projection.rotate([accumulatedRotation.x, accumulatedRotation.y]);
-        drawWorld();
+      globe.selectAll('*').attr('transform', accumulatedZoom);
+    };
 
-        svg.selectAll(`.${globeClass} > *`).attr('transform', accumulatedZoom);
-      };
-    })();
+    const move = (x, y) => {
+      const translation = projection.translate();
+      const accumulatedZoom = globe.select(`.${landClass}`).attr('transform');
+
+      globe.remove();
+      projection.translate([translation[0] + x, translation[1] + y]);
+      globe = drawWorld();
+
+      globe.selectAll('*').attr('transform', accumulatedZoom);
+    };
 
     svg.call(
       d3.drag()
-        .on('drag', () => rotate(d3.event.dx, d3.event.dy))
+        .on('drag', () => (
+          ctrlKey.isHeld() ? move(d3.event.dx, d3.event.dy) : rotate(d3.event.dx, d3.event.dy)
+        ))
     );
 
     svg.call(
       d3.zoom()
         .scaleExtent([0.5, 4])
-        .on('zoom', () => svg.selectAll(`.${globeClass} > *`).attr('transform', d3.event.transform))
+        .on('zoom', () => globe.selectAll('*').attr('transform', d3.event.transform))
     );
   });
