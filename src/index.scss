@@ -1,6 +1,7 @@
 $clr_water: #ddd;
 $clr_land: #666;
 $clr_boundaries: #fff;
+$clr_graticule: #000;
 
 .svg {
   border: 1px solid orange;
@@ -19,4 +20,10 @@ $clr_boundaries: #fff;
   fill: $clr_land;
   stroke: $clr_boundaries;
   stroke-width: 0.2px;
+}
+
+.graticule {
+  stroke: $clr_graticule;
+  stroke-width: 0.1;
+  fill: none;
 }

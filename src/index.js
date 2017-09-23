@@ -4,7 +4,8 @@ import {
   water,
   globe as globeClass,
   land as landClass,
-  meteorite
+  meteorite,
+  graticule as graticuleClass
 } from './index.scss';
 
 const d3 = require('d3');
@@ -16,6 +17,7 @@ const height = d3.min([window.innerHeight - 5, 800]);
 const radius = height / 2 - 5;
 const scale = radius;
 const rotationModifier = 0.15;
+const graticuleStep = 30;
 
 
 
@@ -38,6 +40,7 @@ const projection = d3.geoOrthographic()
 
 const path = d3.geoPath(projection);
 const circle = d3.geoCircle().radius(1);
+const graticule = d3.geoGraticule().step([graticuleStep, graticuleStep]);
 
 
 
@@ -70,6 +73,12 @@ fetch(url)
         .selectAll().data(meteorites)
         .enter().append('path')
         .attr('d', d => path(circle.center(d.geometry.coordinates)()));
+
+      globe.selectAll()
+        .data(graticule.lines)
+        .enter().append('path')
+        .attr('d', path)
+        .classed(graticuleClass, true);
     };
 
     drawWorld();
