@@ -96,19 +96,30 @@ fetch(url)
 
     const rotate = (() => {
       let accumulatedRotation = { x: 0, y: 0 };
+      let accumulatedZoom = '';
 
       return (x, y) => {
         accumulatedRotation.x += x * rotationModifier;
         accumulatedRotation.y -= y * rotationModifier;
 
-        svg.select(`.${globeClass}`).remove();
+        const globe = svg.select(`.${globeClass}`);
+        accumulatedZoom = globe.select(`.${landClass}`).attr('transform');
+        globe.remove();
         projection.rotate([accumulatedRotation.x, accumulatedRotation.y]);
         drawWorld();
+
+        svg.selectAll(`.${globeClass} > *`).attr('transform', accumulatedZoom);
       };
     })();
 
     svg.call(
       d3.drag()
         .on('drag', () => rotate(d3.event.dx, d3.event.dy))
+    );
+
+    svg.call(
+      d3.zoom()
+        .scaleExtent([0.5, 4])
+        .on('zoom', () => svg.selectAll(`.${globeClass} > *`).attr('transform', d3.event.transform))
     );
   });
