@@ -1,5 +1,6 @@
 $clr_water: #ddd;
 $clr_land: #666;
+$clr_boundaries: #fff;
 
 .svg {
   border: 1px solid orange;
@@ -7,6 +8,7 @@ $clr_land: #666;
 }
 
 .globe {
+  all: initial;
 }
 
 .water {
@@ -15,4 +17,6 @@ $clr_land: #666;
 
 .land {
   fill: $clr_land;
+  stroke: $clr_boundaries;
+  stroke-width: 0.2px;
 }
