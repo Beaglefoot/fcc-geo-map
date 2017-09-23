@@ -9,6 +9,7 @@ import {
 } from './index.scss';
 
 const d3 = require('d3');
+window.d3 = d3;
 const topojson = require('topojson');
 
 const url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/meteorite-strike-data.json';
@@ -39,7 +40,7 @@ const projection = d3.geoOrthographic()
   .clipAngle(90);
 
 const path = d3.geoPath(projection);
-const circle = d3.geoCircle().radius(1);
+const circle = d3.geoCircle();
 const graticule = d3.geoGraticule().step([graticuleStep, graticuleStep]);
 
 
@@ -54,6 +55,12 @@ fetch(url)
   )))
   .then(({ meteorites, world }) => {
     const land = topojson.feature(world, world.objects.countries);
+    const masses = meteorites.map(m => parseInt(m.properties.mass));
+
+    const radiusScale = d3.scalePow()
+      .domain([d3.min(masses), d3.max(masses)])
+      .range([0.4, 10])
+      .exponent(0.55);
 
     const drawWorld = () => {
       const globe = svg.append('g').classed(globeClass, true);
@@ -72,7 +79,11 @@ fetch(url)
       globe
         .selectAll().data(meteorites)
         .enter().append('path')
-        .attr('d', d => path(circle.center(d.geometry.coordinates)()));
+        .classed(meteorite, true)
+        .attr('d', d => path(
+          circle.center(d.geometry.coordinates)
+            .radius(radiusScale(d.properties.mass))()
+        ));
 
       globe.selectAll()
         .data(graticule.lines)
@@ -98,8 +109,6 @@ fetch(url)
 
     svg.call(
       d3.drag()
-        .on('start', () => console.log('drag start'))
         .on('drag', () => rotate(d3.event.dx, d3.event.dy))
-        .on('end', () => console.log('drag end'))
     );
   });
