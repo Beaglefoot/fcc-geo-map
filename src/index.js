@@ -44,6 +44,7 @@ const svg = d3.select(
 svg
   .attr('width', width)
   .attr('height', height)
+  .attr('viewBox', `0 0 ${width} ${height}`)
   .classed(svgClass, true);
 
 app.appendChild(svg.node());
@@ -116,7 +117,7 @@ fetch(url)
       accumulatedRotation[0] += x * rotationModifier;
       accumulatedRotation[1] -= y * rotationModifier;
 
-      const accumulatedZoom = globe.select(`.${landClass}`).attr('transform');
+      const accumulatedZoom = globe.select(':first-child').attr('transform');
       globe.remove();
       projection.rotate(accumulatedRotation);
       globe = drawWorld();
@@ -124,16 +125,11 @@ fetch(url)
       globe.selectAll('*').attr('transform', accumulatedZoom);
     };
 
-    const move = (x, y) => {
-      const translation = projection.translate();
-      const accumulatedZoom = globe.select(`.${landClass}`).attr('transform');
-
-      globe.remove();
-      projection.translate([translation[0] + x, translation[1] + y]);
-      globe = drawWorld();
-
-      globe.selectAll('*').attr('transform', accumulatedZoom);
-    };
+    const move = ((accumulatedOffset = [0, 0]) => (x, y) => {
+      accumulatedOffset[0] -= x;
+      accumulatedOffset[1] -= y;
+      svg.attr('viewBox', `${accumulatedOffset[0]} ${accumulatedOffset[1]} ${width} ${height}`);
+    })();
 
     svg.call(
       d3.drag()
