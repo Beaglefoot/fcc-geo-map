@@ -8,6 +8,8 @@ import {
   graticule as graticuleClass
 } from './index.scss';
 
+import Tooltip from './Tooltip/Tooltip';
+
 const d3 = require('d3');
 window.d3 = d3;
 const topojson = require('topojson');
@@ -34,6 +36,11 @@ const handleCtrlKey = event => ctrlKey.setState(event.ctrlKey);
 addEventListener('keydown', handleCtrlKey);
 addEventListener('keyup', handleCtrlKey);
 
+
+const tooltip = new Tooltip().setContent('hey<br>you');
+document.body.appendChild(tooltip.node());
+setTimeout(() => tooltip.show(), 1000);
+setTimeout(() => tooltip.hide(), 3000);
 
 
 const app = document.getElementById('app');
@@ -99,7 +106,8 @@ fetch(url)
         .attr('d', d => path(
           circle.center(d.geometry.coordinates)
             .radius(radiusScale(d.properties.mass))()
-        ));
+        ))
+        .on('mouseover', d => console.log(d));
 
       globe.selectAll()
         .data(graticule.lines)
