@@ -2,7 +2,8 @@ $clr_water: #ddd;
 $clr_land: #666;
 $clr_boundaries: #fff;
 $clr_graticule: #000;
-$clr_meteorite: gold;
+$clr_meteorite: rgba(gold, 0.5);
+$clr_meteorite_hover: rgba(mix($clr_meteorite, #fff), 0.8);
 
 .svg {
   border: 1px solid orange;
@@ -30,6 +31,10 @@ $clr_meteorite: gold;
 }
 
 .meteorite {
-  fill: rgba($clr_meteorite, 0.5);
+  fill: $clr_meteorite;
   stroke: darken($clr_meteorite, 20%);
+
+  &:hover {
+    fill: $clr_meteorite_hover;
+  }
 }

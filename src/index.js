@@ -1,4 +1,6 @@
 /* eslint no-unused-vars: off */
+import round from 'lodash/round';
+
 import {
   svg as svgClass,
   water,
@@ -37,10 +39,15 @@ addEventListener('keydown', handleCtrlKey);
 addEventListener('keyup', handleCtrlKey);
 
 
-const tooltip = new Tooltip().setContent('hey<br>you');
-document.body.appendChild(tooltip.node());
-setTimeout(() => tooltip.show(), 1000);
-setTimeout(() => tooltip.hide(), 3000);
+const tooltipHash = {};
+const clearTooltipHash = () => (
+  Object.keys(tooltipHash).forEach(name => {
+    tooltipHash[name].hide();
+    delete tooltipHash[name];
+  })
+);
+window.tooltipHash = tooltipHash;
+
 
 
 const app = document.getElementById('app');
@@ -70,7 +77,10 @@ const graticule = d3.geoGraticule().step([graticuleStep, graticuleStep]);
 fetch(url)
   .then(response => response.json())
   .then(({ features: meteorites }) => (
-    meteorites = meteorites.filter(({ geometry }) => geometry).filter((_, i) => !(i % 6))
+    meteorites = meteorites.filter(({ geometry }) => geometry)
+      // Prevent overlapping of small meteorites by big ones
+      .sort((a, b) => b.properties.mass - a.properties.mass)
+      .filter((_, i) => !(i % 6))
   ))
   .then(meteorites => new Promise(resolve => (
     import('./world-110m').then(world => resolve({ meteorites, world }))
@@ -94,9 +104,9 @@ fetch(url)
         .attr('cy', translation[1])
         .attr('r', radius);
 
-      globe.datum(land)
+      globe//.datum(land)
         .append('path')
-        .attr('d', path)
+        .attr('d', path(land))
         .classed(landClass, true);
 
       globe
@@ -107,7 +117,33 @@ fetch(url)
           circle.center(d.geometry.coordinates)
             .radius(radiusScale(d.properties.mass))()
         ))
-        .on('mouseover', d => console.log(d));
+        .on('mouseover', ({ properties: {
+          mass,
+          name,
+          recclass,
+          reclat,
+          reclong,
+          year
+        }}) => {
+          const { x, y } = d3.event;
+          if (!tooltipHash[name]) {
+            tooltipHash[name] = new Tooltip()
+              .setPosition(x + 15, y)
+              .setContent([
+                `<strong>Location:</strong> ${name}`,
+                `<strong>Class:</strong> ${recclass}`,
+                `<strong>Coordinates:</strong> ${round(reclat, 3)}°, ${round(reclong, 3)}°`,
+                `<strong>Mass:</strong> ${mass}`,
+                `<strong>Year:</strong> ${year.substr(0, 4)}`
+              ].join('<br>'))
+              .show();
+          }
+        })
+        .on('mouseout', ({ properties: { name }}) => {
+          console.log(name);
+          tooltipHash[name].hide();
+          delete tooltipHash[name];
+        });
 
       globe.selectAll()
         .data(graticule.lines)
@@ -121,6 +157,8 @@ fetch(url)
     let globe = drawWorld();
 
     const rotate = (x, y) => {
+      clearTooltipHash();
+
       const accumulatedRotation = projection.rotate();
       accumulatedRotation[0] += x * rotationModifier;
       accumulatedRotation[1] -= y * rotationModifier;
