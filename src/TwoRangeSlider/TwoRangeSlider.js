@@ -5,7 +5,7 @@ class TwoRangeSlider {
     lowValue = 1800,
     highValue = 2010,
     min = 0,
-    max = 2000
+    max = 2010
   } = {}) {
     this.rangeSlider = document.createElement('div');
     this.rangeSlider.classList.add(rangeSlider);
@@ -31,35 +31,47 @@ class TwoRangeSlider {
       el.classList.add(slider);
     });
 
+    const findMin = (min, val) => min < val ? min : val;
+    const findMax = (max, val) => max > val ? max : val;
+
     [lowSlider, lowNumber].forEach(el => el.setAttribute('value', lowValue));
+
     lowSlider.oninput = ({ target }) => {
       target.value = [
         parseInt(target.value),
         highNumber.value
-      ].reduce((min, val) => min < val ? min : val, undefined);
+      ].reduce(findMin, undefined);
       lowNumber.value = target.value;
     };
+
     lowNumber.onchange = ({ target }) => {
-      target.value = [
-        parseInt(target.value),
-        highNumber.value
-      ].reduce((min, val) => min < val ? min : val, undefined);
+      target.value = findMax(
+        [
+          parseInt(target.value),
+          highNumber.value
+        ].reduce(findMin, undefined),
+        target.min
+      );
       lowSlider.value = target.value;
     };
 
     [highNumber, highSlider].forEach(el => el.setAttribute('value', highValue));
+
     highSlider.oninput = ({ target }) => {
       target.value = [
         parseInt(target.value),
         lowNumber.value
-      ].reduce((max, val) => max > val ? max : val, undefined);
+      ].reduce(findMax, undefined);
       highNumber.value = target.value;
     };
     highNumber.onchange = ({ target }) => {
-      target.value = [
-        parseInt(target.value),
-        lowNumber.value
-      ].reduce((max, val) => max > val ? max : val, undefined);
+      target.value = findMin(
+        [
+          parseInt(target.value),
+          lowNumber.value
+        ].reduce(findMax, undefined),
+        target.max
+      );
       highSlider.value = target.value;
     };
 
