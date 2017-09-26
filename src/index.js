@@ -11,6 +11,7 @@ import {
 } from './index.scss';
 
 import Tooltip from './Tooltip/Tooltip';
+import TwoRangeSlider from './TwoRangeSlider/TwoRangeSlider';
 
 const d3 = require('d3');
 window.d3 = d3;
@@ -104,7 +105,7 @@ fetch(url)
         .attr('cy', translation[1])
         .attr('r', radius);
 
-      globe//.datum(land)
+      globe
         .append('path')
         .attr('d', path(land))
         .classed(landClass, true);
@@ -140,7 +141,6 @@ fetch(url)
           }
         })
         .on('mouseout', ({ properties: { name }}) => {
-          console.log(name);
           tooltipHash[name].hide();
           delete tooltipHash[name];
         });
@@ -190,3 +190,4 @@ fetch(url)
         .on('zoom', () => globe.selectAll('*').attr('transform', d3.event.transform))
     );
   });
+new TwoRangeSlider().appendToNode(app);
