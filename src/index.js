@@ -190,4 +190,5 @@ fetch(url)
         .on('zoom', () => globe.selectAll('*').attr('transform', d3.event.transform))
     );
   });
+
 new TwoRangeSlider().appendToNode(app);

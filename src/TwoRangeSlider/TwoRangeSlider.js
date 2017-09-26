@@ -1,3 +1,5 @@
+import { rangeSlider, slider, number, sliderGroup, numberGroup } from './TwoRangeSlider.scss';
+
 class TwoRangeSlider {
   constructor({
     lowValue = 1800,
@@ -6,6 +8,7 @@ class TwoRangeSlider {
     max = 2000
   } = {}) {
     this.rangeSlider = document.createElement('div');
+    this.rangeSlider.classList.add(rangeSlider);
 
     const [
       lowNumber,
@@ -19,36 +22,62 @@ class TwoRangeSlider {
       return el;
     });
 
-    [lowNumber, highNumber].forEach(el => el.setAttribute('type', 'number'));
-    [lowSlider, highSlider].forEach(el => el.setAttribute('type', 'range'));
-
-    [lowNumber, lowSlider].forEach((el, i, all) => {
-      el.setAttribute('value', lowValue);
-      el.oninput = () => {
-        el.value = [
-          parseInt(el.value),
-          highNumber.value
-        ].reduce((min, val) => min < val ? min : val, undefined);
-
-        all.find((_, j) => j !== i).setAttribute('value', el.value);
-      };
+    [lowNumber, highNumber].forEach(el => {
+      el.setAttribute('type', 'number');
+      el.classList.add(number);
+    });
+    [lowSlider, highSlider].forEach(el => {
+      el.setAttribute('type', 'range');
+      el.classList.add(slider);
     });
 
-    [highNumber, highSlider].forEach((el, i, all) => {
-      el.setAttribute('value', highValue);
-      el.oninput = () => {
-        el.value = [
-          parseInt(el.value),
-          lowNumber.value
-        ].reduce((max, val) => max > val ? max : val, undefined);
+    [lowSlider, lowNumber].forEach(el => el.setAttribute('value', lowValue));
+    lowSlider.oninput = ({ target }) => {
+      target.value = [
+        parseInt(target.value),
+        highNumber.value
+      ].reduce((min, val) => min < val ? min : val, undefined);
+      lowNumber.value = target.value;
+    };
+    lowNumber.onchange = ({ target }) => {
+      target.value = [
+        parseInt(target.value),
+        highNumber.value
+      ].reduce((min, val) => min < val ? min : val, undefined);
+      lowSlider.value = target.value;
+    };
 
-        all.find((_, j) => j !== i).setAttribute('value', el.value);
-      };
-    });
+    [highNumber, highSlider].forEach(el => el.setAttribute('value', highValue));
+    highSlider.oninput = ({ target }) => {
+      target.value = [
+        parseInt(target.value),
+        lowNumber.value
+      ].reduce((max, val) => max > val ? max : val, undefined);
+      highNumber.value = target.value;
+    };
+    highNumber.onchange = ({ target }) => {
+      target.value = [
+        parseInt(target.value),
+        lowNumber.value
+      ].reduce((max, val) => max > val ? max : val, undefined);
+      highSlider.value = target.value;
+    };
 
-    [lowNumber, highNumber, lowSlider, highSlider].forEach(el => (
-      this.rangeSlider.appendChild(el)
-    ));
+    const numbers = document.createElement('div');
+    numbers.classList.add(numberGroup);
+    [
+      document.createTextNode('from: '),
+      lowNumber,
+      document.createTextNode('to: '),
+      highNumber
+    ].forEach(el => numbers.appendChild(el));
+
+    const sliders = document.createElement('div');
+    sliders.classList.add(sliderGroup);
+    sliders.appendChild(lowSlider);
+    sliders.appendChild(highSlider);
+
+    [numbers, sliders].forEach(el => this.rangeSlider.appendChild(el));
   }
 
   appendToNode(node) {

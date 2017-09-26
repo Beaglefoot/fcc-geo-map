@@ -1,0 +1,42 @@
+.range-slider {
+  max-width: 10em;
+}
+
+.number-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+.number {
+  max-width: 3em;
+  text-align: center;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0;
+  }
+}
+
+.slider-group {
+  position: relative;
+  width: inherit;
+}
+
+.slider {
+  position: absolute;
+  top: 0.5em;
+  left: 0;
+  width: 100%;
+  margin: 0;
+
+  &::-webkit-slider-runnable-track {
+  }
+  &::-webkit-slider-thumb {
+    appearance: none;
+    z-index: 2;
+    position: relative;
+  }
+}
