@@ -1,99 +1,137 @@
-import { rangeSlider, slider, number, sliderGroup, numberGroup } from './TwoRangeSlider.scss';
+/* eslint no-unused-vars: off */
+import {
+  rangeSlider,
+  valuesGroup,
+  text as textClass,
+  value as valueClass,
+  track as trackClass,
+  thumb as thumbClass,
+  active
+} from './TwoRangeSlider.scss';
+
+const createDivWithGivenClass = className => {
+  const div = document.createElement('div');
+  div.classList.add(className);
+  return div;
+};
 
 class TwoRangeSlider {
   constructor({
     lowValue = 1800,
-    highValue = 2010,
-    min = 0,
+    highValue = 1950,
+    min = 1600,
     max = 2010
   } = {}) {
-    this.rangeSlider = document.createElement('div');
-    this.rangeSlider.classList.add(rangeSlider);
+    this.rangeSlider = createDivWithGivenClass(rangeSlider);
+    this.rangeSlider.innerHTML = ''.concat(
+      `<div class="${valuesGroup}">`,
+      `  <div class="${textClass}">from: <div class="${valueClass}" id="value1">0</div></div>`,
+      `  <div class="${textClass}">to: <div   class="${valueClass}" id="value2">0</div></div>`,
+      '</div>',
+      `<div class="${trackClass}">`,
+      `  <div class="${thumbClass}" id="thumb1"></div>`,
+      `  <div class="${thumbClass}" id="thumb2"></div>`,
+      '</div>'
+    );
 
-    const [
-      lowNumber,
-      highNumber,
-      lowSlider,
-      highSlider
-    ] = new Array(5).fill().map(() => {
-      const el = document.createElement('input');
-      el.setAttribute('min', min);
-      el.setAttribute('max', max);
-      return el;
-    });
-
-    [lowNumber, highNumber].forEach(el => {
-      el.setAttribute('type', 'number');
-      el.classList.add(number);
-    });
-    [lowSlider, highSlider].forEach(el => {
-      el.setAttribute('type', 'range');
-      el.classList.add(slider);
-    });
-
-    const findMin = (min, val) => min < val ? min : val;
-    const findMax = (max, val) => max > val ? max : val;
-
-    [lowSlider, lowNumber].forEach(el => el.setAttribute('value', lowValue));
-
-    lowSlider.oninput = ({ target }) => {
-      target.value = [
-        parseInt(target.value),
-        highNumber.value
-      ].reduce(findMin, undefined);
-      lowNumber.value = target.value;
-    };
-
-    lowNumber.onchange = ({ target }) => {
-      target.value = findMax(
-        [
-          parseInt(target.value),
-          highNumber.value
-        ].reduce(findMin, undefined),
-        target.min
-      );
-      lowSlider.value = target.value;
-    };
-
-    [highNumber, highSlider].forEach(el => el.setAttribute('value', highValue));
-
-    highSlider.oninput = ({ target }) => {
-      target.value = [
-        parseInt(target.value),
-        lowNumber.value
-      ].reduce(findMax, undefined);
-      highNumber.value = target.value;
-    };
-    highNumber.onchange = ({ target }) => {
-      target.value = findMin(
-        [
-          parseInt(target.value),
-          lowNumber.value
-        ].reduce(findMax, undefined),
-        target.max
-      );
-      highSlider.value = target.value;
-    };
-
-    const numbers = document.createElement('div');
-    numbers.classList.add(numberGroup);
-    [
-      document.createTextNode('from: '),
-      lowNumber,
-      document.createTextNode('to: '),
-      highNumber
-    ].forEach(el => numbers.appendChild(el));
-
-    const sliders = document.createElement('div');
-    sliders.classList.add(sliderGroup);
-    sliders.appendChild(lowSlider);
-    sliders.appendChild(highSlider);
-
-    [numbers, sliders].forEach(el => this.rangeSlider.appendChild(el));
+    this.lowValue = lowValue;
+    this.highValue = highValue;
+    this.valueRange = [min, max];
   }
 
   appendToNode(node) {
     node.appendChild(this.rangeSlider);
+
+
+    const track = this.rangeSlider.getElementsByClassName(trackClass)[0];
+    const {
+      left: trackStartingX,
+      width: trackWidth
+    } = track.getBoundingClientRect();
+    const trackEndingX = trackStartingX + trackWidth;
+    const thumb1 = this.rangeSlider.getElementsByClassName(thumbClass)[0];
+    const thumb2 = this.rangeSlider.getElementsByClassName(thumbClass)[1];
+    const value1 = this.rangeSlider.getElementsByClassName(valueClass)[0];
+    const value2 = this.rangeSlider.getElementsByClassName(valueClass)[1];
+
+
+    const getThumbCenter = thumb => {
+      const { left, width } = thumb.getBoundingClientRect();
+      return left + width / 2;
+    };
+
+    const scaleValue = value => (
+      (this.valueRange[1] - this.valueRange[0]) * value + this.valueRange[0]
+    );
+
+    const valueToPosition = (value, width) => (
+      width * (value - this.valueRange[0]) / (this.valueRange[1] - this.valueRange[0])
+    );
+
+    const moveThumb = (() => {
+      const argsHash = {};
+
+      return (selectedThumb, selectedValue) => {
+        const key = ''.concat(
+          selectedThumb.getAttribute('id'),
+          selectedValue.getAttribute('id')
+        );
+
+        if (argsHash[key]) return argsHash[key];
+
+        argsHash[key] = event => {
+          let newX = event.clientX - trackStartingX;
+          if (event.clientX > trackEndingX) newX = trackWidth;
+          else if (event.clientX < trackStartingX) newX = 0;
+          if (
+            selectedThumb.getAttribute('id') === 'thumb1' &&
+            event.clientX > trackStartingX + thumb2.offsetLeft
+          ) newX = getThumbCenter(thumb2) - trackStartingX;
+          else if (
+            selectedThumb.getAttribute('id') === 'thumb2' &&
+            event.clientX < trackStartingX + thumb1.offsetLeft
+          ) newX = getThumbCenter(thumb1) - trackStartingX;
+
+          selectedThumb.style.left = `${newX}px`;
+          selectedValue.textContent = Math.round(
+            scaleValue(newX / trackWidth)
+          );
+        };
+
+        return argsHash[key];
+      };
+    })();
+
+    [
+      { thumb: thumb1, value: value1 },
+      { thumb: thumb2, value: value2 }
+    ].forEach(({ thumb, value }) => thumb.addEventListener('mousedown', event => {
+      // To get rid of occasional drag behavior
+      event.preventDefault();
+      thumb.classList.add(active);
+      window.addEventListener('mousemove', moveThumb(thumb, value));
+    }));
+
+    window.addEventListener('mouseup', () => {
+      [thumb1, thumb2].forEach(thumb => thumb.classList.remove(active));
+      [
+        { thumb: thumb1, value: value1 },
+        { thumb: thumb2, value: value2 }
+      ].forEach(({ thumb, value }) => (
+        window.removeEventListener('mousemove', moveThumb(thumb, value))
+      ));
+    });
+
+    thumb1.style.left = `${valueToPosition(this.lowValue, trackWidth)}px`;
+    value1.textContent = Math.round(
+      scaleValue((getThumbCenter(thumb1) - trackStartingX) / trackWidth)
+    );
+    thumb2.style.left = `${valueToPosition(this.highValue, trackWidth)}px`;
+    value2.textContent = Math.round(
+      scaleValue((getThumbCenter(thumb2) - trackStartingX) / trackWidth)
+    );
+
+
     return this;
   }
 }
