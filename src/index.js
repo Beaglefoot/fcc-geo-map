@@ -83,6 +83,7 @@ fetch(url)
       .sort((a, b) => b.properties.mass - a.properties.mass)
       .map(m => {
         m.properties.year = parseInt(m.properties.year.substr(0, 4));
+        m.properties.mass = parseInt(m.properties.mass);
         return m;
       })
   ))

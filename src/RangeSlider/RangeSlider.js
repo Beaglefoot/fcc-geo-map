@@ -6,7 +6,8 @@ import {
   value as valueClass,
   track as trackClass,
   thumb as thumbClass,
-  active
+  active,
+  hide
 } from './RangeSlider.scss';
 
 const createDivWithGivenClass = className => {
@@ -116,6 +117,9 @@ class RangeSlider {
       event.preventDefault();
       thumb.classList.add(active);
       window.addEventListener('mousemove', moveThumb(thumb, value));
+
+      // In case when both thumbs are on max
+      if (thumb2.classList.contains(hide)) thumb2.classList.remove(hide);
     }));
 
     window.addEventListener('mouseup', () => {
@@ -126,6 +130,9 @@ class RangeSlider {
       ].forEach(({ thumb, value }) => (
         window.removeEventListener('mousemove', moveThumb(thumb, value))
       ));
+
+      // In case when both thumbs are on max
+      if (parseInt(value1.textContent) === this.valueRange[1]) thumb2.classList.add(hide);
     });
 
     thumb1.style.left = `${valueToPosition(this.lowValue, trackWidth)}px`;
