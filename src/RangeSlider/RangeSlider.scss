@@ -1,5 +1,5 @@
 .range-slider {
-  width: 300px;
+  width: 240px;
   padding: 1em;
   background: rgba(#eee, 0.7);
   border-radius: 7px;
@@ -8,8 +8,7 @@
 
 .values-group {
   display: flex;
-  justify-content: space-between;
-  width: 50%;
+  justify-content: center;
   margin: 0 auto;
   margin-bottom: 0.7em;
   font-family: Calibri, Arial;
@@ -37,6 +36,10 @@
   border: 1px solid darken(gold, 20%);
   border-radius: 50%;
   cursor: ew-resize;
+}
+
+.text {
+  display: initial;
 }
 
 .active {

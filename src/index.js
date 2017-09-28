@@ -1,5 +1,6 @@
 /* eslint no-unused-vars: off */
 import round from 'lodash/round';
+import debounce from 'lodash/debounce';
 
 import {
   svg as svgClass,
@@ -11,10 +12,9 @@ import {
 } from './index.scss';
 
 import Tooltip from './Tooltip/Tooltip';
-import TwoRangeSlider from './TwoRangeSlider/TwoRangeSlider';
+import RangeSlider from './RangeSlider/RangeSlider';
 
 const d3 = require('d3');
-window.d3 = d3;
 const topojson = require('topojson');
 
 const url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/meteorite-strike-data.json';
@@ -24,6 +24,7 @@ const radius = height / 2 - 5;
 const scale = radius;
 const rotationModifier = 0.15;
 const graticuleStep = 30;
+const initialYearFilter = [1960, (new Date).getFullYear()];
 
 const ctrlKey = (() => {
   let isHoldingCtrlKey = false;
@@ -47,7 +48,6 @@ const clearTooltipHash = () => (
     delete tooltipHash[name];
   })
 );
-window.tooltipHash = tooltipHash;
 
 
 
@@ -78,10 +78,13 @@ const graticule = d3.geoGraticule().step([graticuleStep, graticuleStep]);
 fetch(url)
   .then(response => response.json())
   .then(({ features: meteorites }) => (
-    meteorites = meteorites.filter(({ geometry }) => geometry)
+    meteorites.filter(m => m.geometry && m.properties.year && m.properties.mass)
       // Prevent overlapping of small meteorites by big ones
       .sort((a, b) => b.properties.mass - a.properties.mass)
-      .filter((_, i) => !(i % 6))
+      .map(m => {
+        m.properties.year = parseInt(m.properties.year.substr(0, 4));
+        return m;
+      })
   ))
   .then(meteorites => new Promise(resolve => (
     import('./world-110m').then(world => resolve({ meteorites, world }))
@@ -89,6 +92,14 @@ fetch(url)
   .then(({ meteorites, world }) => {
     const land = topojson.feature(world, world.objects.countries);
     const masses = meteorites.map(m => parseInt(m.properties.mass));
+
+    const filterMeteorites = (yearsRange = [0, (new Date).getFullYear()]) => (
+      meteorites.filter(
+        ({ properties: { year }}) => year >= yearsRange[0] && year <= yearsRange[1]
+      )
+    );
+
+    let filteredMeteorites = filterMeteorites(initialYearFilter);
 
     const radiusScale = d3.scalePow()
       .domain([d3.min(masses), d3.max(masses)])
@@ -111,7 +122,7 @@ fetch(url)
         .classed(landClass, true);
 
       globe
-        .selectAll().data(meteorites)
+        .selectAll().data(filteredMeteorites)
         .enter().append('path')
         .classed(meteorite, true)
         .attr('d', d => path(
@@ -135,7 +146,7 @@ fetch(url)
                 `<strong>Class:</strong> ${recclass}`,
                 `<strong>Coordinates:</strong> ${round(reclat, 3)}°, ${round(reclong, 3)}°`,
                 `<strong>Mass:</strong> ${mass}`,
-                `<strong>Year:</strong> ${year.substr(0, 4)}`
+                `<strong>Year:</strong> ${year}`
               ].join('<br>'))
               .show();
           }
@@ -156,6 +167,13 @@ fetch(url)
 
     let globe = drawWorld();
 
+    const redrawWorld = () => {
+      const accumulatedZoom = globe.select(':first-child').attr('transform');
+      globe.remove();
+      globe = drawWorld();
+      globe.selectAll('*').attr('transform', accumulatedZoom);
+    };
+
     const rotate = (x, y) => {
       clearTooltipHash();
 
@@ -163,12 +181,8 @@ fetch(url)
       accumulatedRotation[0] += x * rotationModifier;
       accumulatedRotation[1] -= y * rotationModifier;
 
-      const accumulatedZoom = globe.select(':first-child').attr('transform');
-      globe.remove();
       projection.rotate(accumulatedRotation);
-      globe = drawWorld();
-
-      globe.selectAll('*').attr('transform', accumulatedZoom);
+      redrawWorld();
     };
 
     const move = ((accumulatedOffset = [0, 0]) => (x, y) => {
@@ -189,6 +203,17 @@ fetch(url)
         .scaleExtent([0.5, 4])
         .on('zoom', () => globe.selectAll('*').attr('transform', d3.event.transform))
     );
-  });
 
-new TwoRangeSlider().appendToNode(app);
+    const onYearsChange = yearsRange => {
+      filteredMeteorites = filterMeteorites(yearsRange);
+      redrawWorld();
+    };
+
+    new RangeSlider({
+      lowValue: initialYearFilter[0],
+      highValue: initialYearFilter[1],
+      min: d3.min(meteorites.map(m => m.properties.year)),
+      max: (new Date).getFullYear(),
+      callback: debounce(onYearsChange, 50)
+    }).appendToNode(app);
+  });

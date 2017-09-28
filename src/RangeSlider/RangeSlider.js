@@ -7,7 +7,7 @@ import {
   track as trackClass,
   thumb as thumbClass,
   active
-} from './TwoRangeSlider.scss';
+} from './RangeSlider.scss';
 
 const createDivWithGivenClass = className => {
   const div = document.createElement('div');
@@ -15,18 +15,22 @@ const createDivWithGivenClass = className => {
   return div;
 };
 
-class TwoRangeSlider {
+class RangeSlider {
   constructor({
     lowValue = 1800,
     highValue = 1950,
     min = 1600,
-    max = 2010
+    max = 2010,
+    callback = () => {}
   } = {}) {
     this.rangeSlider = createDivWithGivenClass(rangeSlider);
     this.rangeSlider.innerHTML = ''.concat(
       `<div class="${valuesGroup}">`,
-      `  <div class="${textClass}">from: <div class="${valueClass}" id="value1">0</div></div>`,
-      `  <div class="${textClass}">to: <div   class="${valueClass}" id="value2">0</div></div>`,
+      `  <div class="${textClass}"><strong>Years:</strong>`,
+      `  <span class="${valueClass}" id="value1">0</span>`,
+      '  <span> - </span>',
+      `  <span class="${valueClass}" id="value2">0</span>`,
+      '  </div>',
       '</div>',
       `<div class="${trackClass}">`,
       `  <div class="${thumbClass}" id="thumb1"></div>`,
@@ -37,11 +41,11 @@ class TwoRangeSlider {
     this.lowValue = lowValue;
     this.highValue = highValue;
     this.valueRange = [min, max];
+    this.callback = callback;
   }
 
   appendToNode(node) {
     node.appendChild(this.rangeSlider);
-
 
     const track = this.rangeSlider.getElementsByClassName(trackClass)[0];
     const {
@@ -96,6 +100,8 @@ class TwoRangeSlider {
           selectedValue.textContent = Math.round(
             scaleValue(newX / trackWidth)
           );
+
+          this.callback([parseInt(value1.textContent), parseInt(value2.textContent)]);
         };
 
         return argsHash[key];
@@ -136,4 +142,4 @@ class TwoRangeSlider {
   }
 }
 
-export default TwoRangeSlider;
+export default RangeSlider;
