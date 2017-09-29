@@ -20,9 +20,11 @@ const d3 = require('d3');
 const topojson = require('topojson');
 
 const url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/meteorite-strike-data.json';
-const width = d3.min([window.innerWidth, 1200]);
-const height = d3.min([window.innerHeight - 5, 800]);
-const radius = height / 2 - 5;
+const getWidth  = () => d3.min([window.innerWidth, 1200]);
+const getHeight = () => d3.min([window.innerHeight - 5, 800]);
+// const width = d3.min([window.innerWidth, 1200]);
+// const height = d3.min([window.innerHeight - 5, 800]);
+const radius = getHeight() / 2 - 5;
 const scale = radius;
 const rotationModifier = 0.15;
 const graticuleStep = 30;
@@ -62,14 +64,14 @@ const svg = d3.select(
 );
 
 svg
-  .attr('width', width)
-  .attr('height', height)
-  .attr('viewBox', `0 0 ${width} ${height}`)
+  .attr('width', getWidth())
+  .attr('height', getHeight())
+  .attr('viewBox', `0 0 ${getWidth()} ${getHeight()}`)
   .classed(svgClass, true);
 
 
 const projection = d3.geoOrthographic()
-  .translate([width / 2, height / 2])
+  .translate([getWidth() / 2, getHeight() / 2])
   .scale(scale)
   .clipAngle(90);
 
@@ -181,7 +183,7 @@ const buildMappedGlobe = ({ meteorites, world }) => {
   const move = ((accumulatedOffset = [0, 0]) => (x, y) => {
     accumulatedOffset[0] -= x;
     accumulatedOffset[1] -= y;
-    svg.attr('viewBox', `${accumulatedOffset[0]} ${accumulatedOffset[1]} ${width} ${height}`);
+    svg.attr('viewBox', `${accumulatedOffset[0]} ${accumulatedOffset[1]} ${getWidth()} ${getHeight()}`);
   })();
 
   svg.call(
@@ -202,13 +204,28 @@ const buildMappedGlobe = ({ meteorites, world }) => {
     redrawWorld();
   };
 
-  new RangeSlider({
+  const rangeSlider = new RangeSlider({
     lowValue: initialYearFilter[0],
     highValue: initialYearFilter[1],
     min: d3.min(meteorites.map(m => m.properties.year)),
     max: (new Date).getFullYear(),
     callback: debounce(onYearsChange, 50)
   }).appendToNode(app);
+
+  const help = new HelpText()
+    .insertNextToNode(svg.node())
+    .addMultipleTextLines([
+      'Rotate with Left Mouse Button',
+      'Zoom with Scroll',
+      'Drag with Left Mouse Button holding Ctrl'
+    ])
+    .positionAbovePreviousSibling();
+
+  window.addEventListener('resize', () => {
+    svg.attr('width', getWidth()).attr('height', getHeight());
+    help.positionAbovePreviousSibling();
+    rangeSlider.reinit();
+  });
 };
 
 
@@ -224,7 +241,7 @@ fetch(url)
   .then(response => response.json())
   .then(({ features: meteorites }) => (
     meteorites.filter(m => m.geometry && m.properties.year && m.properties.mass)
-      // Prevent overlapping of small meteorites by big ones
+    // Prevent overlapping of small meteorites by big ones
       .sort((a, b) => b.properties.mass - a.properties.mass)
       .map(m => {
         m.properties.year = parseInt(m.properties.year.substr(0, 4));
@@ -236,14 +253,4 @@ fetch(url)
     import('./world-110m').then(world => resolve({ meteorites, world }))
   )))
   .then(buildMappedGlobe)
-  .then(() => {
-    new HelpText()
-      .insertNextToNode(svg.node())
-      .addMultipleTextLines([
-        'Rotate with Left Mouse Button',
-        'Zoom with Scroll',
-        'Drag with Left Mouse Button holding Ctrl'
-      ])
-      .positionAbovePreviousSibling();
-  })
   .catch(({ message }) => app.textContent = message);

@@ -1,4 +1,3 @@
-/* eslint no-unused-vars: off */
 import {
   rangeSlider,
   valuesGroup,
@@ -39,39 +38,93 @@ class RangeSlider {
       '</div>'
     );
 
-    this.lowValue = lowValue;
-    this.highValue = highValue;
-    this.valueRange = [min, max];
-    this.callback = callback;
+    Object.assign(this, {
+      lowValue,
+      highValue,
+      callback,
+      valueRange: [min, max],
+      scaleValue: this.scaleValue.bind(this),
+      valueToPosition: this.valueToPosition.bind(this),
+      getThumbCenter: this.getThumbCenter.bind(this),
+      setThumbs: this.setThumbs.bind(this)
+    });
+  }
+
+  scaleValue(value) {
+    const { valueRange } = this;
+    return (valueRange[1] - valueRange[0]) * value + valueRange[0];
+  }
+
+  valueToPosition(value, width) {
+    const { valueRange } = this;
+    return width * (value - valueRange[0]) / (valueRange[1] - valueRange[0]);
+  }
+
+
+  getThumbCenter(thumb) {
+    const { left, width } = thumb.getBoundingClientRect();
+    return left + width / 2;
+  }
+
+  setThumbs() {
+    const {
+      thumb1,
+      thumb2,
+      value1,
+      value2,
+      lowValue,
+      highValue,
+      trackWidth,
+      trackStartingX,
+      scaleValue,
+      getThumbCenter,
+      valueToPosition
+    } = this;
+
+    const [int1, int2] = [value1, value2].map(v => parseInt(v.textContent));
+
+    thumb1.style.left = `${valueToPosition(int1 || lowValue, trackWidth)}px`;
+    value1.textContent = Math.round(
+      scaleValue((getThumbCenter(thumb1) - trackStartingX) / trackWidth)
+    );
+
+    thumb2.style.left = `${valueToPosition(int2 || highValue, trackWidth)}px`;
+    value2.textContent = Math.round(
+      scaleValue((getThumbCenter(thumb2) - trackStartingX) / trackWidth)
+    );
   }
 
   appendToNode(node) {
-    node.appendChild(this.rangeSlider);
-
-    const track = this.rangeSlider.getElementsByClassName(trackClass)[0];
     const {
-      left: trackStartingX,
-      width: trackWidth
-    } = track.getBoundingClientRect();
+      rangeSlider,
+      getThumbCenter,
+      setThumbs,
+      scaleValue,
+      valueRange
+    } = this;
+
+    node.appendChild(rangeSlider);
+
+    const track = rangeSlider.getElementsByClassName(trackClass)[0];
+    const { left, width } = track.getBoundingClientRect();
+
+    const trackStartingX = left;
+    const trackWidth = width;
     const trackEndingX = trackStartingX + trackWidth;
-    const thumb1 = this.rangeSlider.getElementsByClassName(thumbClass)[0];
-    const thumb2 = this.rangeSlider.getElementsByClassName(thumbClass)[1];
-    const value1 = this.rangeSlider.getElementsByClassName(valueClass)[0];
-    const value2 = this.rangeSlider.getElementsByClassName(valueClass)[1];
+    const thumb1 = rangeSlider.getElementsByClassName(thumbClass)[0];
+    const thumb2 = rangeSlider.getElementsByClassName(thumbClass)[1];
+    const value1 = rangeSlider.getElementsByClassName(valueClass)[0];
+    const value2 = rangeSlider.getElementsByClassName(valueClass)[1];
 
-
-    const getThumbCenter = thumb => {
-      const { left, width } = thumb.getBoundingClientRect();
-      return left + width / 2;
-    };
-
-    const scaleValue = value => (
-      (this.valueRange[1] - this.valueRange[0]) * value + this.valueRange[0]
-    );
-
-    const valueToPosition = (value, width) => (
-      width * (value - this.valueRange[0]) / (this.valueRange[1] - this.valueRange[0])
-    );
+    Object.assign(this, {
+      trackStartingX,
+      trackWidth,
+      trackEndingX,
+      thumb1,
+      thumb2,
+      value1,
+      value2
+    });
 
     const moveThumb = (() => {
       const argsCache = {};
@@ -132,20 +185,18 @@ class RangeSlider {
       ));
 
       // In case when both thumbs are on max
-      if (parseInt(value1.textContent) === this.valueRange[1]) thumb2.classList.add(hide);
+      if (parseInt(value1.textContent) === valueRange[1]) thumb2.classList.add(hide);
     });
 
-    thumb1.style.left = `${valueToPosition(this.lowValue, trackWidth)}px`;
-    value1.textContent = Math.round(
-      scaleValue((getThumbCenter(thumb1) - trackStartingX) / trackWidth)
-    );
-    thumb2.style.left = `${valueToPosition(this.highValue, trackWidth)}px`;
-    value2.textContent = Math.round(
-      scaleValue((getThumbCenter(thumb2) - trackStartingX) / trackWidth)
-    );
-
+    setThumbs();
 
     return this;
+  }
+
+  reinit() {
+    const parent = this.rangeSlider.parentNode;
+    parent.removeChild(this.rangeSlider);
+    this.appendToNode(parent);
   }
 }
 
