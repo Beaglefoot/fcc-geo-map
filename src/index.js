@@ -10,7 +10,8 @@ import {
   graticule as graticuleClass,
   helpText,
   slider,
-  tooltip
+  tooltip,
+  title as titleClass
 } from './index.scss';
 
 import Loading from './Loading/Loading';
@@ -18,6 +19,7 @@ import Tooltip from './Tooltip/Tooltip';
 import RangeSlider from './RangeSlider/RangeSlider';
 import HelpText from './HelpText/HelpText';
 import Footer from './Footer/Footer';
+import Title from './Title/Title';
 
 const d3 = require('d3');
 const topojson = require('topojson');
@@ -61,6 +63,8 @@ const loading = new Loading();
 loading.appendToNode(app).startAnimation();
 new Footer().appendToDocument();
 
+const title = new Title('Meteorite Landings Across the Globe').addClass(titleClass);
+
 const svg = d3.select(
   document.createElementNS('http://www.w3.org/2000/svg', 'svg')
 );
@@ -85,7 +89,9 @@ const graticule = d3.geoGraticule().step([graticuleStep, graticuleStep]);
 
 const buildMappedGlobe = ({ meteorites, world }) => {
   loading.removeFromNode(app);
+  title.appendToNode(app);
   app.appendChild(svg.node());
+  title.positionAboveNextSibling();
 
   const land = topojson.feature(world, world.objects.countries);
   const masses = meteorites.map(m => parseInt(m.properties.mass));

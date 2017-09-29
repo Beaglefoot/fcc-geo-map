@@ -48,9 +48,14 @@ $clr_tooltip_border: rgba($clr_graticule, 0.3);
   }
 }
 
-.help-text {
+.help-text, .title {
   color: $clr_font_default;
   text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000, 0 0 5px #000;
+}
+
+.title {
+  margin: 0;
+  z-index: 1;
 }
 
 // Trick specificity
