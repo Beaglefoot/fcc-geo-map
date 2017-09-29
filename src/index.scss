@@ -6,6 +6,7 @@ $clr_meteorite: rgba(gold, 0.5);
 $clr_meteorite_hover: rgba(mix($clr_meteorite, #fff), 0.8);
 
 .svg {
+  position: relative;
   border: 1px solid orange;
   box-sizing: border-box;
 }
@@ -36,5 +37,14 @@ $clr_meteorite_hover: rgba(mix($clr_meteorite, #fff), 0.8);
 
   &:hover {
     fill: $clr_meteorite_hover;
+  }
+}
+
+:global {
+  #app {
+  }
+
+  body {
+    margin: 0;
   }
 }

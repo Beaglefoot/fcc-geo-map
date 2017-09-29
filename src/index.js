@@ -13,6 +13,7 @@ import {
 
 import Tooltip from './Tooltip/Tooltip';
 import RangeSlider from './RangeSlider/RangeSlider';
+import HelpText from './HelpText/HelpText';
 
 const d3 = require('d3');
 const topojson = require('topojson');
@@ -41,11 +42,11 @@ addEventListener('keydown', handleCtrlKey);
 addEventListener('keyup', handleCtrlKey);
 
 
-const tooltipHash = {};
-const clearTooltipHash = () => (
-  Object.keys(tooltipHash).forEach(name => {
-    tooltipHash[name].hide();
-    delete tooltipHash[name];
+const tooltipCache = {};
+const clearTooltipCache = () => (
+  Object.keys(tooltipCache).forEach(name => {
+    tooltipCache[name].hide();
+    delete tooltipCache[name];
   })
 );
 
@@ -75,6 +76,137 @@ const graticule = d3.geoGraticule().step([graticuleStep, graticuleStep]);
 
 
 
+const buildMappedGlobe = ({ meteorites, world }) => {
+  const land = topojson.feature(world, world.objects.countries);
+  const masses = meteorites.map(m => parseInt(m.properties.mass));
+
+  const filterMeteorites = (yearsRange = [0, (new Date).getFullYear()]) => (
+    meteorites.filter(
+      ({ properties: { year }}) => year >= yearsRange[0] && year <= yearsRange[1]
+    )
+  );
+
+  let filteredMeteorites = filterMeteorites(initialYearFilter);
+
+  const radiusScale = d3.scalePow()
+    .domain([d3.min(masses), d3.max(masses)])
+    .range([0.4, 10])
+    .exponent(0.55);
+
+  const drawWorld = () => {
+    const globe = svg.append('g').classed(globeClass, true);
+    const translation = projection.translate();
+
+    globe.append('circle')
+      .classed(water, true)
+      .attr('cx', translation[0])
+      .attr('cy', translation[1])
+      .attr('r', radius);
+
+    globe
+      .append('path')
+      .attr('d', path(land))
+      .classed(landClass, true);
+
+    globe
+      .selectAll().data(filteredMeteorites)
+      .enter().append('path')
+      .classed(meteorite, true)
+      .attr('d', d => path(
+        circle.center(d.geometry.coordinates)
+          .radius(radiusScale(d.properties.mass))()
+      ))
+      .on('mouseover', ({ properties: {
+        mass,
+        name,
+        recclass,
+        reclat,
+        reclong,
+        year
+      }}) => {
+        const { x, y } = d3.event;
+        if (!tooltipCache[name]) {
+          tooltipCache[name] = new Tooltip()
+            .setPosition(x + 15, y)
+            .setContent([
+              `<strong>Location:</strong> ${name}`,
+              `<strong>Class:</strong> ${recclass}`,
+              `<strong>Coordinates:</strong> ${round(reclat, 3)}°, ${round(reclong, 3)}°`,
+              `<strong>Mass:</strong> ${mass}`,
+              `<strong>Year:</strong> ${year}`
+            ].join('<br>'))
+            .show();
+        }
+      })
+      .on('mouseout', ({ properties: { name }}) => {
+        tooltipCache[name].hide();
+        delete tooltipCache[name];
+      });
+
+    globe.selectAll()
+      .data(graticule.lines)
+      .enter().append('path')
+      .attr('d', path)
+      .classed(graticuleClass, true);
+
+    return globe;
+  };
+
+  let globe = drawWorld();
+
+  const redrawWorld = () => {
+    const accumulatedZoom = globe.select(':first-child').attr('transform');
+    globe.remove();
+    globe = drawWorld();
+    globe.selectAll('*').attr('transform', accumulatedZoom);
+  };
+
+  const rotate = (x, y) => {
+    clearTooltipCache();
+
+    const accumulatedRotation = projection.rotate();
+    accumulatedRotation[0] += x * rotationModifier;
+    accumulatedRotation[1] -= y * rotationModifier;
+
+    projection.rotate(accumulatedRotation);
+    redrawWorld();
+  };
+
+  const move = ((accumulatedOffset = [0, 0]) => (x, y) => {
+    accumulatedOffset[0] -= x;
+    accumulatedOffset[1] -= y;
+    svg.attr('viewBox', `${accumulatedOffset[0]} ${accumulatedOffset[1]} ${width} ${height}`);
+  })();
+
+  svg.call(
+    d3.drag()
+      .on('drag', () => (
+        ctrlKey.isHeld() ? move(d3.event.dx, d3.event.dy) : rotate(d3.event.dx, d3.event.dy)
+      ))
+  );
+
+  svg.call(
+    d3.zoom()
+      .scaleExtent([0.5, 4])
+      .on('zoom', () => globe.selectAll('*').attr('transform', d3.event.transform))
+  );
+
+  const onYearsChange = yearsRange => {
+    filteredMeteorites = filterMeteorites(yearsRange);
+    redrawWorld();
+  };
+
+  new RangeSlider({
+    lowValue: initialYearFilter[0],
+    highValue: initialYearFilter[1],
+    min: d3.min(meteorites.map(m => m.properties.year)),
+    max: (new Date).getFullYear(),
+    callback: debounce(onYearsChange, 50)
+  }).appendToNode(app);
+};
+
+
+
 fetch(url)
   .then(response => response.json())
   .then(({ features: meteorites }) => (
@@ -90,131 +222,14 @@ fetch(url)
   .then(meteorites => new Promise(resolve => (
     import('./world-110m').then(world => resolve({ meteorites, world }))
   )))
-  .then(({ meteorites, world }) => {
-    const land = topojson.feature(world, world.objects.countries);
-    const masses = meteorites.map(m => parseInt(m.properties.mass));
-
-    const filterMeteorites = (yearsRange = [0, (new Date).getFullYear()]) => (
-      meteorites.filter(
-        ({ properties: { year }}) => year >= yearsRange[0] && year <= yearsRange[1]
-      )
-    );
-
-    let filteredMeteorites = filterMeteorites(initialYearFilter);
-
-    const radiusScale = d3.scalePow()
-      .domain([d3.min(masses), d3.max(masses)])
-      .range([0.4, 10])
-      .exponent(0.55);
-
-    const drawWorld = () => {
-      const globe = svg.append('g').classed(globeClass, true);
-      const translation = projection.translate();
-
-      globe.append('circle')
-        .classed(water, true)
-        .attr('cx', translation[0])
-        .attr('cy', translation[1])
-        .attr('r', radius);
-
-      globe
-        .append('path')
-        .attr('d', path(land))
-        .classed(landClass, true);
-
-      globe
-        .selectAll().data(filteredMeteorites)
-        .enter().append('path')
-        .classed(meteorite, true)
-        .attr('d', d => path(
-          circle.center(d.geometry.coordinates)
-            .radius(radiusScale(d.properties.mass))()
-        ))
-        .on('mouseover', ({ properties: {
-          mass,
-          name,
-          recclass,
-          reclat,
-          reclong,
-          year
-        }}) => {
-          const { x, y } = d3.event;
-          if (!tooltipHash[name]) {
-            tooltipHash[name] = new Tooltip()
-              .setPosition(x + 15, y)
-              .setContent([
-                `<strong>Location:</strong> ${name}`,
-                `<strong>Class:</strong> ${recclass}`,
-                `<strong>Coordinates:</strong> ${round(reclat, 3)}°, ${round(reclong, 3)}°`,
-                `<strong>Mass:</strong> ${mass}`,
-                `<strong>Year:</strong> ${year}`
-              ].join('<br>'))
-              .show();
-          }
-        })
-        .on('mouseout', ({ properties: { name }}) => {
-          tooltipHash[name].hide();
-          delete tooltipHash[name];
-        });
-
-      globe.selectAll()
-        .data(graticule.lines)
-        .enter().append('path')
-        .attr('d', path)
-        .classed(graticuleClass, true);
-
-      return globe;
-    };
-
-    let globe = drawWorld();
-
-    const redrawWorld = () => {
-      const accumulatedZoom = globe.select(':first-child').attr('transform');
-      globe.remove();
-      globe = drawWorld();
-      globe.selectAll('*').attr('transform', accumulatedZoom);
-    };
-
-    const rotate = (x, y) => {
-      clearTooltipHash();
-
-      const accumulatedRotation = projection.rotate();
-      accumulatedRotation[0] += x * rotationModifier;
-      accumulatedRotation[1] -= y * rotationModifier;
-
-      projection.rotate(accumulatedRotation);
-      redrawWorld();
-    };
-
-    const move = ((accumulatedOffset = [0, 0]) => (x, y) => {
-      accumulatedOffset[0] -= x;
-      accumulatedOffset[1] -= y;
-      svg.attr('viewBox', `${accumulatedOffset[0]} ${accumulatedOffset[1]} ${width} ${height}`);
-    })();
-
-    svg.call(
-      d3.drag()
-        .on('drag', () => (
-          ctrlKey.isHeld() ? move(d3.event.dx, d3.event.dy) : rotate(d3.event.dx, d3.event.dy)
-        ))
-    );
-
-    svg.call(
-      d3.zoom()
-        .scaleExtent([0.5, 4])
-        .on('zoom', () => globe.selectAll('*').attr('transform', d3.event.transform))
-    );
-
-    const onYearsChange = yearsRange => {
-      filteredMeteorites = filterMeteorites(yearsRange);
-      redrawWorld();
-    };
-
-    new RangeSlider({
-      lowValue: initialYearFilter[0],
-      highValue: initialYearFilter[1],
-      min: d3.min(meteorites.map(m => m.properties.year)),
-      max: (new Date).getFullYear(),
-      callback: debounce(onYearsChange, 50)
-    }).appendToNode(app);
+  .then(buildMappedGlobe)
+  .then(() => {
+    new HelpText()
+      .insertNextToNode(svg.node())
+      .addMultipleTextLines([
+        'Rotate with Left Mouse Button',
+        'Zoom with Scroll',
+        'Drag with Left Mouse Button holding Ctrl'
+      ])
+      .positionAbovePreviousSibling();
   });

@@ -74,7 +74,7 @@ class RangeSlider {
     );
 
     const moveThumb = (() => {
-      const argsHash = {};
+      const argsCache = {};
 
       return (selectedThumb, selectedValue) => {
         const key = ''.concat(
@@ -82,9 +82,9 @@ class RangeSlider {
           selectedValue.getAttribute('id')
         );
 
-        if (argsHash[key]) return argsHash[key];
+        if (argsCache[key]) return argsCache[key];
 
-        argsHash[key] = event => {
+        argsCache[key] = event => {
           let newX = event.clientX - trackStartingX;
           if (event.clientX > trackEndingX) newX = trackWidth;
           else if (event.clientX < trackStartingX) newX = 0;
@@ -105,7 +105,7 @@ class RangeSlider {
           this.callback([parseInt(value1.textContent), parseInt(value2.textContent)]);
         };
 
-        return argsHash[key];
+        return argsCache[key];
       };
     })();
 
