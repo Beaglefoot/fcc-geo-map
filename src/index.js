@@ -1,4 +1,3 @@
-/* eslint no-unused-vars: off */
 import round from 'lodash/round';
 import debounce from 'lodash/debounce';
 
@@ -15,6 +14,7 @@ import Loading from './Loading/Loading';
 import Tooltip from './Tooltip/Tooltip';
 import RangeSlider from './RangeSlider/RangeSlider';
 import HelpText from './HelpText/HelpText';
+import Footer from './Footer/Footer';
 
 const d3 = require('d3');
 const topojson = require('topojson');
@@ -22,8 +22,6 @@ const topojson = require('topojson');
 const url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/meteorite-strike-data.json';
 const getWidth  = () => d3.min([window.innerWidth, 1200]);
 const getHeight = () => d3.min([window.innerHeight - 5, 800]);
-// const width = d3.min([window.innerWidth, 1200]);
-// const height = d3.min([window.innerHeight - 5, 800]);
 const radius = getHeight() / 2 - 5;
 const scale = radius;
 const rotationModifier = 0.15;
@@ -58,6 +56,7 @@ const clearTooltipCache = () => (
 const app = document.getElementById('app');
 const loading = new Loading();
 loading.appendToNode(app).startAnimation();
+new Footer().appendToDocument();
 
 const svg = d3.select(
   document.createElementNS('http://www.w3.org/2000/svg', 'svg')
