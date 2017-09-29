@@ -23,7 +23,6 @@
       "quotes": ["error", "single"],
       "linebreak-style": ["error", "unix"],
       "semi": ["error", "always"],
-      "arrow-body-style": ["error", "as-needed"],
-      "import/extensions": 1,
+      "arrow-body-style": ["error", "as-needed"]
     }
 }

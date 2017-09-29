@@ -41,6 +41,7 @@ $clr_tooltip_border: rgba($clr_graticule, 0.3);
 .meteorite {
   fill: $clr_meteorite;
   stroke: darken($clr_meteorite, 20%);
+  transition: fill 0.3s;
 
   &:hover {
     fill: $clr_meteorite_hover;
@@ -63,6 +64,7 @@ $clr_tooltip_border: rgba($clr_graticule, 0.3);
   background: $clr_tooltip_bg;
   color: $clr_tooltip_font;
   border-color: $clr_tooltip_border;
+  line-height: 1.3;
 }
 
 .slider.slider {
@@ -89,7 +91,7 @@ $clr_tooltip_border: rgba($clr_graticule, 0.3);
     margin: 0;
     display: flex;
     flex-direction: column;
-    background-image: url('~assets/images/nasa-53884_effects.jpg');
+    background-image: url('~assets/images/nasa-53884.jpg');
     background-size: cover;
     background-repeat: no-repeat;
     user-select: none;
