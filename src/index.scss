@@ -4,11 +4,15 @@ $clr_boundaries: #fff;
 $clr_graticule: #000;
 $clr_meteorite: rgba(gold, 0.5);
 $clr_meteorite_hover: rgba(mix($clr_meteorite, #fff), 0.8);
+$clr_svg_bg: rgba(#13181f, 0.9);
+$clr_font_default: #fff;
 
 .svg {
   position: relative;
-  border: 1px solid orange;
-  box-sizing: border-box;
+  background: $clr_svg_bg;
+  box-shadow: 0 0 20px rgba(#000, 0.85);
+  border-radius: 10px;
+  margin-top: 5vh;
 }
 
 .globe {
@@ -40,6 +44,18 @@ $clr_meteorite_hover: rgba(mix($clr_meteorite, #fff), 0.8);
   }
 }
 
+.help-text {
+  color: $clr_font_default;
+  text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000, 0 0 5px #000;
+}
+
+:global(#app) .slider {
+  margin-top: 10px;
+  background: $clr_svg_bg;
+  color: $clr_font_default;
+  box-shadow: 0 0 20px rgba(#000, 0.85);
+}
+
 :global {
   html, body {
     height: 100%;
@@ -49,6 +65,11 @@ $clr_meteorite_hover: rgba(mix($clr_meteorite, #fff), 0.8);
     margin: 0;
     display: flex;
     flex-direction: column;
+    background-image: url('~assets/images/nasa-53884_effects.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    user-select: none;
+    cursor: default;
   }
 
   #app {

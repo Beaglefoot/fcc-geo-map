@@ -17,13 +17,13 @@ class HelpText {
   }
 
   positionAbovePreviousSibling() {
-    const { right, width, height } = this.helpText.previousSibling.getBoundingClientRect();
+    const { right, width, height, top } = this.helpText.previousSibling.getBoundingClientRect();
     const isParentFlex = getComputedStyle(this.helpText.parentNode).display === 'flex';
     if (!isParentFlex) {
       this.helpText.style.transform = `translate(calc(${right}px - 100%), calc(-100% - 0.3em))`;
     }
     else {
-      this.helpText.style.transform = `translate(calc(${width / 2}px - 50%), calc(${height}px - 100%))`;
+      this.helpText.style.transform = `translate(calc(${width / 2}px - 50%), calc(${height + top}px - 100%))`;
     }
     return this;
   }
@@ -37,6 +37,11 @@ class HelpText {
 
   addMultipleTextLines(lines) {
     lines.forEach(line => this.addTextLine(line));
+    return this;
+  }
+
+  addClass(className) {
+    this.helpText.classList.add(className);
     return this;
   }
 }

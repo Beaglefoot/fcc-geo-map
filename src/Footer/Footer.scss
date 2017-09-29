@@ -7,16 +7,17 @@ $clr_text: lighten(gray, 20%);
   color: rgba($clr_text, 0.8);
   text-align: center;
   padding: 0.2em;
-  background: rgba(#000, 0.3);
+  background: rgba(#000, 0.5);
 }
 
 .link {
   text-decoration: none;
   color: rgba($clr_link, 0.8);
   outline: none;
-  transition: color 0.3s;
+  transition: all 0.3s;
 
   &:hover {
     color: lighten($clr_link, 10%);
+    text-shadow: 0 0 2px $clr_link, 0 0 18px #000;
   }
 }

@@ -7,7 +7,9 @@ import {
   globe as globeClass,
   land as landClass,
   meteorite,
-  graticule as graticuleClass
+  graticule as graticuleClass,
+  helpText,
+  slider
 } from './index.scss';
 
 import Loading from './Loading/Loading';
@@ -209,7 +211,9 @@ const buildMappedGlobe = ({ meteorites, world }) => {
     min: d3.min(meteorites.map(m => m.properties.year)),
     max: (new Date).getFullYear(),
     callback: debounce(onYearsChange, 50)
-  }).appendToNode(app);
+  })
+    .appendToNode(app)
+    .addClass(slider);
 
   const help = new HelpText()
     .insertNextToNode(svg.node())
@@ -218,7 +222,8 @@ const buildMappedGlobe = ({ meteorites, world }) => {
       'Zoom with Scroll',
       'Drag with Left Mouse Button holding Ctrl'
     ])
-    .positionAbovePreviousSibling();
+    .positionAbovePreviousSibling()
+    .addClass(helpText);
 
   window.addEventListener('resize', () => {
     svg.attr('width', getWidth()).attr('height', getHeight());

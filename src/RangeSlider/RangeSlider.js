@@ -198,6 +198,11 @@ class RangeSlider {
     parent.removeChild(this.rangeSlider);
     this.appendToNode(parent);
   }
+
+  addClass(className) {
+    this.rangeSlider.classList.add(className);
+    return this;
+  }
 }
 
 export default RangeSlider;

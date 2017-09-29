@@ -15,14 +15,17 @@ class Footer {
 
   appendToDocument() {
     document.body.appendChild(this.footer);
+    return this;
   }
 
   removeFromDocument() {
     document.body.removeChild(this.footer);
+    return this;
   }
 
   addClass(className) {
     this.footer.classList.add(className);
+    return this;
   }
 }
 
