@@ -42,6 +42,10 @@ $clr_meteorite_hover: rgba(mix($clr_meteorite, #fff), 0.8);
 
 :global {
   #app {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
   }
 
   body {

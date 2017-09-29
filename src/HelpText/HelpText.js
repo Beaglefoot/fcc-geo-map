@@ -17,8 +17,14 @@ class HelpText {
   }
 
   positionAbovePreviousSibling() {
-    const { right } = this.helpText.previousSibling.getBoundingClientRect();
-    this.helpText.style.transform = `translate(calc(${right}px - 100%), calc(-100% - 0.3em))`;
+    const { right, width, height } = this.helpText.previousSibling.getBoundingClientRect();
+    const isParentFlex = getComputedStyle(this.helpText.parentNode).display === 'flex';
+    if (!isParentFlex) {
+      this.helpText.style.transform = `translate(calc(${right}px - 100%), calc(-100% - 0.3em))`;
+    }
+    else {
+      this.helpText.style.transform = `translate(calc(${width / 2}px - 50%), calc(${height}px - 100%))`;
+    }
     return this;
   }
 

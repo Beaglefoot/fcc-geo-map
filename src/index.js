@@ -11,6 +11,7 @@ import {
   graticule as graticuleClass
 } from './index.scss';
 
+import Loading from './Loading/Loading';
 import Tooltip from './Tooltip/Tooltip';
 import RangeSlider from './RangeSlider/RangeSlider';
 import HelpText from './HelpText/HelpText';
@@ -53,6 +54,9 @@ const clearTooltipCache = () => (
 
 
 const app = document.getElementById('app');
+const loading = new Loading();
+loading.appendToNode(app).startAnimation();
+
 const svg = d3.select(
   document.createElementNS('http://www.w3.org/2000/svg', 'svg')
 );
@@ -63,7 +67,6 @@ svg
   .attr('viewBox', `0 0 ${width} ${height}`)
   .classed(svgClass, true);
 
-app.appendChild(svg.node());
 
 const projection = d3.geoOrthographic()
   .translate([width / 2, height / 2])
@@ -77,6 +80,9 @@ const graticule = d3.geoGraticule().step([graticuleStep, graticuleStep]);
 
 
 const buildMappedGlobe = ({ meteorites, world }) => {
+  loading.removeFromNode(app);
+  app.appendChild(svg.node());
+
   const land = topojson.feature(world, world.objects.countries);
   const masses = meteorites.map(m => parseInt(m.properties.mass));
 
@@ -208,6 +214,13 @@ const buildMappedGlobe = ({ meteorites, world }) => {
 
 
 fetch(url)
+  .then(response => {
+    if (response.status >= 200 && response.status < 300) return response;
+    else {
+      const error = new Error(`${response.status} ${response.statusText}`);
+      throw error;
+    }
+  })
   .then(response => response.json())
   .then(({ features: meteorites }) => (
     meteorites.filter(m => m.geometry && m.properties.year && m.properties.mass)
@@ -232,4 +245,5 @@ fetch(url)
         'Drag with Left Mouse Button holding Ctrl'
       ])
       .positionAbovePreviousSibling();
-  });
+  })
+  .catch(({ message }) => app.textContent = message);
