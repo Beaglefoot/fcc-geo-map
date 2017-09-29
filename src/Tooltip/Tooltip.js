@@ -48,6 +48,11 @@ class Tooltip {
     this.tooltip.style.top = `${y}px`;
     return this;
   }
+
+  addClass(className) {
+    this.tooltip.classList.add(className);
+    return this;
+  }
 }
 
 export default Tooltip;

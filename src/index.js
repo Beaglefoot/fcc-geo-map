@@ -9,7 +9,8 @@ import {
   meteorite,
   graticule as graticuleClass,
   helpText,
-  slider
+  slider,
+  tooltip
 } from './index.scss';
 
 import Loading from './Loading/Loading';
@@ -144,6 +145,7 @@ const buildMappedGlobe = ({ meteorites, world }) => {
               `<strong>Mass:</strong> ${mass}`,
               `<strong>Year:</strong> ${year}`
             ].join('<br>'))
+            .addClass(tooltip)
             .show();
         }
       })
@@ -245,7 +247,7 @@ fetch(url)
   .then(response => response.json())
   .then(({ features: meteorites }) => (
     meteorites.filter(m => m.geometry && m.properties.year && m.properties.mass)
-    // Prevent overlapping of small meteorites by big ones
+      // Prevent overlapping of small meteorites by big ones
       .sort((a, b) => b.properties.mass - a.properties.mass)
       .map(m => {
         m.properties.year = parseInt(m.properties.year.substr(0, 4));

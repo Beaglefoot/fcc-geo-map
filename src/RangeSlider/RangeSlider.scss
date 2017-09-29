@@ -1,3 +1,12 @@
+$clr_thumb: gold;
+$clr_thumb_dragged: #FC2F68;
+$clr_track: lighten(#0B2E59, 10%);
+
+@mixin bg-gradient($clr1, $clr2) {
+  background: repeating-linear-gradient(135deg, $clr1 0, $clr2 8%, $clr1 0, $clr2 50%);
+  background-size: 8px 8px;
+}
+
 .range-slider {
   width: 240px;
   padding: 1em;
@@ -22,7 +31,7 @@
   position: relative;
   width: inherit;
   height: 2px;
-  background: lightblue;
+  background: $clr_track;
 }
 
 .thumb {
@@ -30,12 +39,13 @@
   top: 0;
   left: 0;
   transform: translate(-50%, -50%);
-  width: 1em;
-  height: 1em;
-  background: gold;
-  border: 1px solid darken(gold, 20%);
-  border-radius: 50%;
+  width: 0.5em;
+  height: 1.2em;
+  border-radius: 50% / 20%;
+  border: 1px solid darken($clr_thumb, 20%);
   cursor: ew-resize;
+
+  @include bg-gradient($clr_thumb, darken($clr_thumb, 15%));
 }
 
 .text {
@@ -43,8 +53,9 @@
 }
 
 .active {
-  background: rgba(tomato, 0.8);
-  border: 1px solid darken(tomato, 20%);
+  border: 1px solid darken($clr_thumb_dragged, 20%);
+
+  @include bg-gradient($clr_thumb_dragged, darken($clr_thumb_dragged, 25%));
 }
 
 .hide {

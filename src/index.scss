@@ -1,11 +1,14 @@
-$clr_water: #ddd;
-$clr_land: #666;
-$clr_boundaries: #fff;
+$clr_water: #2B879E;
+$clr_land: #F2E8C4;
+$clr_boundaries: mix($clr_land, #000);
 $clr_graticule: #000;
-$clr_meteorite: rgba(gold, 0.5);
-$clr_meteorite_hover: rgba(mix($clr_meteorite, #fff), 0.8);
+$clr_meteorite: rgba(gold, 0.6);
+$clr_meteorite_hover: rgba(mix($clr_meteorite, tomato), 0.8);
 $clr_svg_bg: rgba(#13181f, 0.9);
 $clr_font_default: #fff;
+$clr_tooltip_bg: lighten($clr_land, 5%);
+$clr_tooltip_font: rgba($clr_water, 0.85);
+$clr_tooltip_border: rgba($clr_graticule, 0.3);
 
 .svg {
   position: relative;
@@ -26,7 +29,7 @@ $clr_font_default: #fff;
 .land {
   fill: $clr_land;
   stroke: $clr_boundaries;
-  stroke-width: 0.2px;
+  stroke-width: 0.1px;
 }
 
 .graticule {
@@ -41,6 +44,7 @@ $clr_font_default: #fff;
 
   &:hover {
     fill: $clr_meteorite_hover;
+  stroke: darken($clr_meteorite_hover, 20%);
   }
 }
 
@@ -49,11 +53,26 @@ $clr_font_default: #fff;
   text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000, 0 0 5px #000;
 }
 
-:global(#app) .slider {
+// Trick specificity
+.tooltip.tooltip {
+  background: $clr_tooltip_bg;
+  color: $clr_tooltip_font;
+  border-color: $clr_tooltip_border;
+}
+
+.slider.slider {
   margin-top: 10px;
   background: $clr_svg_bg;
   color: $clr_font_default;
   box-shadow: 0 0 20px rgba(#000, 0.85);
+
+  & > :last-child {
+    background: rgba($clr_water, 0.8);
+  }
+
+  strong, span {
+    font-family: 'Roboto';
+  }
 }
 
 :global {
@@ -70,6 +89,9 @@ $clr_font_default: #fff;
     background-repeat: no-repeat;
     user-select: none;
     cursor: default;
+    color: $clr_font_default;
+    font-family: 'Roboto';
+    font-size: 14px;
   }
 
   #app {
