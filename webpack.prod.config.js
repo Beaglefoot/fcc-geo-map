@@ -31,6 +31,8 @@ module.exports = Object.assign({}, devModuleConfig, {
       }
     }),
     new ExtractTextPlugin('style.css'),
-    new MinifyPlugin()
+    new MinifyPlugin({
+      evaluate: false
+    })
   ]
 });
