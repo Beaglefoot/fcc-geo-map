@@ -9,6 +9,7 @@ $clr_font_default: #fff;
 $clr_tooltip_bg: lighten($clr_land, 5%);
 $clr_tooltip_font: rgba($clr_water, 0.85);
 $clr_tooltip_border: rgba($clr_graticule, 0.3);
+$clr_mouse_active: tomato;
 
 .svg {
   position: relative;
@@ -54,6 +55,10 @@ $clr_tooltip_border: rgba($clr_graticule, 0.3);
   text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000, 0 0 5px #000;
 }
 
+.help-text {
+  font-size: 16px;
+}
+
 .title {
   margin: 0;
   z-index: 1;
@@ -80,6 +85,24 @@ $clr_tooltip_border: rgba($clr_graticule, 0.3);
   strong, span {
     font-family: 'Roboto';
   }
+}
+
+.mouse-icon svg {
+  $square_size: 2em;
+  width: $square_size;
+  height: $square_size;
+  transform: translateY(3px);
+}
+
+:global {
+  #mouse-scroll, #mouse-left-button, #mouse-right-button {
+    fill: #fff;
+  }
+}
+
+.mouse-highlight-left :global(#mouse-left-button),
+.mouse-highlight-scroll :global(#mouse-scroll) {
+  fill: $clr_mouse_active;
 }
 
 :global {

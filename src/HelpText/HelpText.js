@@ -30,7 +30,7 @@ class HelpText {
 
   addTextLine(text) {
     const line = document.createElement('div');
-    line.appendChild(document.createTextNode(text));
+    line.innerHTML = text;
     this.helpText.appendChild(line);
     return this;
   }

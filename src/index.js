@@ -1,5 +1,7 @@
+/* eslint no-unused-vars: off */
 import round from 'lodash/round';
 import debounce from 'lodash/debounce';
+import classNames from 'classnames';
 
 import {
   svg as svgClass,
@@ -11,7 +13,10 @@ import {
   helpText,
   slider,
   tooltip,
-  title as titleClass
+  title as titleClass,
+  mouseIcon as mouseIconClass,
+  mouseHighlightLeft,
+  mouseHighlightScroll
 } from './index.scss';
 
 import Loading from './Loading/Loading';
@@ -20,6 +25,8 @@ import RangeSlider from './RangeSlider/RangeSlider';
 import HelpText from './HelpText/HelpText';
 import Footer from './Footer/Footer';
 import Title from './Title/Title';
+
+import mouseIcon from 'assets/icons/mouse-icon.svg';
 
 const d3 = require('d3');
 const topojson = require('topojson');
@@ -226,9 +233,9 @@ const buildMappedGlobe = ({ meteorites, world }) => {
   const help = new HelpText()
     .insertNextToNode(svg.node())
     .addMultipleTextLines([
-      'Rotate with Left Mouse Button',
-      'Zoom with Scroll',
-      'Drag with Left Mouse Button holding Ctrl'
+      `Rotate <span class="${classNames(mouseIconClass, mouseHighlightLeft)}">${mouseIcon}</span>`,
+      `Zoom <span class="${classNames(mouseIconClass, mouseHighlightScroll)}">${mouseIcon}</span>`,
+      `Drag Ctrl + <span class="${classNames(mouseIconClass, mouseHighlightLeft)}">${mouseIcon}</span>`
     ])
     .positionAbovePreviousSibling()
     .addClass(helpText);

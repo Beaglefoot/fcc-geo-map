@@ -48,7 +48,7 @@ module.exports = {
         })
       },
       {
-        test: /\.(jpe?g|png|svg)$/i,
+        test: /\.(jpe?g|png)$/i,
         use: [
           'file-loader',
           {
@@ -64,6 +64,24 @@ module.exports = {
               mozjpeg: {
                 progressive: true,
                 quality: 80
+              }
+            }
+          }
+        ]
+      },
+      {
+        test: /\.svg$/i,
+        use: [
+          'raw-loader',
+          {
+            loader: 'image-webpack-loader',
+            options: {
+              svgo: {
+                plugins: [
+                  { removeDimensions: true },
+                  { removeViewBox: true },
+                  { cleanupIDs: false }
+                ]
               }
             }
           }
