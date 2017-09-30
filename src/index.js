@@ -16,7 +16,8 @@ import {
   title as titleClass,
   mouseIcon as mouseIconClass,
   mouseHighlightLeft,
-  mouseHighlightScroll
+  mouseHighlightScroll,
+  ctrlButton
 } from './index.scss';
 
 import Loading from './Loading/Loading';
@@ -235,7 +236,7 @@ const buildMappedGlobe = ({ meteorites, world }) => {
     .addMultipleTextLines([
       `Rotate <span class="${classNames(mouseIconClass, mouseHighlightLeft)}">${mouseIcon}</span>`,
       `Zoom <span class="${classNames(mouseIconClass, mouseHighlightScroll)}">${mouseIcon}</span>`,
-      `Drag Ctrl + <span class="${classNames(mouseIconClass, mouseHighlightLeft)}">${mouseIcon}</span>`
+      `Drag <span class="${ctrlButton}">Ctrl</span> + <span class="${classNames(mouseIconClass, mouseHighlightLeft)}">${mouseIcon}</span>`
     ])
     .positionAbovePreviousSibling()
     .addClass(helpText);

@@ -105,6 +105,20 @@ $clr_mouse_active: tomato;
   fill: $clr_mouse_active;
 }
 
+.ctrlButton {
+  display: inline-block;
+  width: 2.5em;
+  text-align: center;
+  background: white;
+  font-size: 12px;
+  font-weight: bold;
+  text-shadow: none;
+  color: #000;
+  border: 0.5px solid #000;
+  border-radius: 3px;
+  transform: translateY(-3px);
+}
+
 :global {
   html, body {
     height: 100%;
