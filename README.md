@@ -9,4 +9,4 @@ User Stories:
 * I can tell the relative size of the meteorite, just by looking at the way it's represented on the map.
 * I can mouse over the meteorite's data point for additional data.
 
-Additinally you can rotate, zoom and drag the globe as well as filter meteorite strikes by years.
+Additionally you can rotate, zoom and drag the globe as well as filter meteorite strikes by years.
