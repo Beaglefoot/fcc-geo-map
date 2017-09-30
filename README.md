@@ -1,6 +1,8 @@
 # Map Data Across the Globe
 [The final project in Data Visualization section on freeCodeCamp](https://www.freecodecamp.org/challenges/show-national-contiguity-with-a-force-directed-graph)
 
+![sreenshot](https://raw.githubusercontent.com/Beaglefoot/fcc-geo-map/gh-pages/assets/images/screenshot.jpg)
+
 User Stories:
 
 * I can see where all Meteorites landed on a world map.
